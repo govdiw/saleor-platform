@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+  api:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.saleor-api.entrypoints: websecure
+      traefik.http.routers.saleor-api.rule: Host(`saleor-api.test.govinddiwakar.tech`) && PathPrefix(`/graphql`)
+      traefik.http.routers.saleor-api.service: saleor-api
+      traefik.http.services.saleor-api.loadbalancer.server.port: 8000
+      traefik.docker.network: web
+    networks:
+      web:
+
+  storefront:  
+    labels:
+      traefik.enable: true
+      traefik.http.routers.saleor-store.entrypoints: websecure
+      traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-store.service: saleor-store
+      traefik.http.services.saleor-store.loadbalancer.server.port: 80
+      traefik.docker.network: web
+    networks:
+      web:
+
+  dashboard:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.saleor-admin.entrypoints: websecure
+      traefik.http.routers.saleor-admin.rule: Host(`saleor-admin.test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-admin.service: saleor-admin
+      traefik.http.services.saleor-admin.loadbalancer.server.port: 80
+      traefik.docker.network: web
+    networks:
+      web:
+
+  jaeger:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.saleor-jaeger.entrypoints: websecure
+      traefik.http.routers.saleor-jaeger.rule: Host(`saleor-jaeger.test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-jaeger.service: saleor-jaeger
+      traefik.http.services.saleor-jaeger.loadbalancer.server.port: 16686
+      traefik.docker.network: web
+    networks:
+      web:
+
+  mailhog:
+    labels:
+      traefik.enable: true
+      traefik.http.routers.saleor-mail.entrypoints: websecure
+      traefik.http.routers.saleor-mail.rule: Host(`saleor-mail.test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-mail.service: saleor-mail
+      traefik.http.services.saleor-mail.loadbalancer.server.port: 8025
+      traefik.docker.network: web
+    networks:
+      web:
+
+  db:
+    labels:
+      traefik.enable: false
+
+  redis:
+    labels:
+      traefik.enable: false
+
+  worker:
+    labels:
+      traefik.enable: false
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false

@@ -1,0 +1,221 @@
+networks:
+  internal:
+    external: false
+  saleor-backend-tier:
+    driver: bridge
+  web:
+    external: true
+    name: web
+services:
+  api:
+    build:
+      args:
+        STATIC_URL: /static/
+      context: /home/developer/sourcegoodfood/code/saleor-platform/saleor
+      dockerfile: ./Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      db:
+        condition: service_started
+      jaeger:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+      API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
+      CELERY_BROKER_URL: redis://redis:6379/1
+      DASHBOARD_URL: https://saleor-admin-test.govinddiwakar.tech/
+      DATABASE_URL: postgres://saleor:password@db/saleor
+      DEFAULT_FROM_EMAIL: noreply@test.govinddiwakar.tech
+      JAEGER_AGENT_HOST: jaeger
+      SECRET_KEY: secret_key
+      STOREFRONT_URL: https://test.govinddiwakar.tech/
+    labels:
+      traefik.docker.network: web
+      traefik.enable: "True"
+      traefik.http.routers.saleor-api.entrypoints: websecure
+      traefik.http.routers.saleor-api.rule: Host(`saleor-api-test.govinddiwakar.tech`)
+        && PathPrefix(`/graphql/`)
+      traefik.http.routers.saleor-api.service: saleor-api
+      traefik.http.services.saleor-api.loadbalancer.server.port: '8000'
+    networks:
+      saleor-backend-tier: {}
+      web: {}
+    ports:
+    - published: 8000
+      target: 8000
+    restart: unless-stopped
+    volumes:
+    - saleor-media:/app/media:rw
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor/saleor:/app/saleor:Z
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor/templates:/app/templates:Z
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor/tests:/app/tests:rw
+  dashboard:
+    build:
+      context: /home/developer/sourcegoodfood/code/saleor-platform/saleor-dashboard
+      dockerfile: ./Dockerfile
+    environment:
+      ALLOWED_CLIENT_HOSTS: '"localhost,test.govinddiwakar.tech"'
+      ALLOWED_HOSTS: '"test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api-test.govinddiwakar.tech,*.govinddiwakar.tech"'
+      API_URI: http://saleor-api-test.govinddiwakar.tech/graphql/
+    labels:
+      traefik.docker.network: web
+      traefik.enable: "True"
+      traefik.http.routers.saleor-admin.entrypoints: websecure
+      traefik.http.routers.saleor-admin.rule: Host(`saleor-admin-test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-admin.service: saleor-admin
+      traefik.http.services.saleor-admin.loadbalancer.server.port: '80'
+    networks:
+      web: {}
+    ports:
+    - published: 9000
+      target: 9000
+    restart: unless-stopped
+    volumes:
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor-dashboard:/app:cached
+    - /app/node_modules
+  db:
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: saleor
+    image: library/postgres:11.1-alpine
+    labels:
+      traefik.enable: "False"
+    networks:
+      saleor-backend-tier: {}
+    ports:
+    - published: 5432
+      target: 5432
+    restart: unless-stopped
+    volumes:
+    - saleor-db:/var/lib/postgresql/data:rw
+  jaeger:
+    image: jaegertracing/all-in-one
+    labels:
+      traefik.docker.network: web
+      traefik.enable: "True"
+      traefik.http.routers.saleor-jaeger.entrypoints: websecure
+      traefik.http.routers.saleor-jaeger.rule: Host(`saleor-jaeger-test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-jaeger.service: saleor-jaeger
+      traefik.http.services.saleor-jaeger.loadbalancer.server.port: '16686'
+    networks:
+      saleor-backend-tier: {}
+      web: {}
+    container_name: saleor_test_server
+    ports:
+    - protocol: udp
+      published: 5775
+      target: 5775
+    - published: 5778
+      target: 5778
+    - protocol: udp
+      published: 6831
+      target: 6831
+    - protocol: udp
+      published: 6832
+      target: 6832
+    - published: 9411
+      target: 9411
+    - published: 14268
+      target: 14268
+    - published: 16686
+      target: 16686
+    restart: unless-stopped
+  mailhog:
+    image: mailhog/mailhog
+    labels:
+      traefik.docker.network: web
+      traefik.enable: "True"
+      traefik.http.routers.saleor-mail.entrypoints: websecure
+      traefik.http.routers.saleor-mail.rule: Host(`saleor-mail-test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-mail.service: saleor-mail
+      traefik.http.services.saleor-mail.loadbalancer.server.port: '8025'
+    networks:
+      saleor-backend-tier: {}
+      web: {}
+    ports:
+    - published: 1025
+      target: 1025
+    - published: 8025
+      target: 8025
+    restart: unless-stopped
+  redis:
+    image: library/redis:5.0-alpine
+    labels:
+      traefik.enable: "False"
+    networks:
+      saleor-backend-tier: {}
+    ports:
+    - published: 6379
+      target: 6379
+    restart: unless-stopped
+    volumes:
+    - saleor-redis:/data:rw
+  storefront:
+    build:
+      context: /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront
+      dockerfile: ./Dockerfile
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+      API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
+    labels:
+      traefik.docker.network: web
+      traefik.enable: "True"
+      traefik.http.routers.saleor-store.entrypoints: websecure
+      traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-store.service: saleor-store
+      traefik.http.services.saleor-store.loadbalancer.server.port: '80'
+    networks:
+      web: {}
+    ports:
+    - published: 3000
+      target: 3000
+    restart: unless-stopped
+    volumes:
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront:/app:cached
+    - /app/node_modules
+  worker:
+    build:
+      args:
+        STATIC_URL: /static/
+      context: /home/developer/sourcegoodfood/code/saleor-platform/saleor
+      dockerfile: ./Dockerfile
+    command: celery -A saleor --app=saleor.celeryconf:app worker --loglevel=info
+    depends_on:
+      mailhog:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+      API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
+      CELERY_BROKER_URL: redis://redis:6379/1
+      DATABASE_URL: postgres://saleor:password@db/saleor
+      DEFAULT_FROM_EMAIL: noreply@test.govinddiwakar.tech
+      EMAIL_URL: smtp://mailhog:1025
+      JAEGER_AGENT_HOST: jaeger
+      SECRET_KEY: secret_key
+    labels:
+      traefik.enable: "False"
+    networks:
+      saleor-backend-tier: {}
+    restart: unless-stopped
+    volumes:
+    - saleor-media:/app/media:rw
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor/saleor:/app/saleor:Z,cached
+    - /home/developer/sourcegoodfood/code/saleor-platform/saleor/templates:/app/templates:Z,cached
+version: '3'
+volumes:
+  saleor-db:
+    driver: local
+  saleor-media: {}
+  saleor-redis:
+    driver: local
+

@@ -1,7 +1,6 @@
-version: '3'
+version: "2"
 
 services:
-
   api:
     ports:
       - 8000:8000
@@ -9,7 +8,7 @@ services:
       context: ./saleor
       dockerfile: ./Dockerfile
       args:
-        STATIC_URL: '/static/'
+        STATIC_URL: "/static/"
     restart: unless-stopped
     networks:
       - saleor-backend-tier
@@ -26,43 +25,33 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     env_file: common.env
     environment:
-      - JAEGER_AGENT_HOST=localhost
-      - JAEGER_LOGGING=True
-      - STOREFRONT_URL=https://saleor-store.test.govinddiwakar.tech/
-      - DASHBOARD_URL=https://saleor-admin.test.govinddiwakar.tech/
+      - JAEGER_AGENT_HOST=jaeger
+      - STOREFRONT_URL=http://139.59.56.66:3000/
+      - DASHBOARD_URL=http://139.59.56.66:9000/
 
   storefront:
     build:
       context: ./saleor-storefront
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     ports:
-      - 3000:3000
-    depends_on:
-      api:
-        condition: service_started
+      - 3000:80
     restart: unless-stopped
     volumes:
       - ./saleor-storefront/:/app:cached
       - /app/node_modules/
-    environment:
-     - API_URI=https://saleor-api.test.govinddiwakar.tech/graphql/
-     - ALLOWED_CLIENT_HOSTS=.govinddiwakar.tech,localhost
-     - ALLOWED_HOSTS=.govinddiwakar.tech,localhost
+    command: npm start -- --hostname 0.0.0.0
 
   dashboard:
     build:
       context: ./saleor-dashboard
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.dev
     ports:
-      - 9000:9000
+      - 9000:80
     restart: unless-stopped
     volumes:
       - ./saleor-dashboard/:/app:cached
       - /app/node_modules/
-    environment:
-      - API_URI=http://saleor-api.test.govinddiwakar.tech/graphql/
-      - ALLOWED_CLIENT_HOSTS="localhost,test.govinddiwakar.tech"
-      - ALLOWED_HOSTS="test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api.test.govinddiwakar.tech,*.govinddiwakar.tech"
+    command: npm start -- --host 0.0.0.0
 
   db:
     image: library/postgres:11.1-alpine
@@ -75,7 +64,7 @@ services:
       - saleor-db:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=saleor
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_PASSWORD=saleor
 
   redis:
     image: library/redis:5.0-alpine
@@ -92,7 +81,7 @@ services:
       context: ./saleor
       dockerfile: ./Dockerfile
       args:
-        STATIC_URL: '/static/'
+        STATIC_URL: "/static/"
     command: celery -A saleor --app=saleor.celeryconf:app worker --loglevel=info
     restart: unless-stopped
     networks:
@@ -106,8 +95,6 @@ services:
       - ./saleor/templates/:/app/templates:Z,cached
       # shared volume between worker and api for media
       - saleor-media:/app/media
-    environment:
-      - EMAIL_URL=smtp://mailhog:1025
 
   jaeger:
     image: jaegertracing/all-in-one
