@@ -153,33 +153,33 @@ services:
     restart: unless-stopped
     volumes:
     - saleor-redis:/data:rw
-  storefront:
-    build:
-      context: /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront
-      dockerfile: ./Dockerfile
-    depends_on:
-      api:
-        condition: service_started
-    environment:
-      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
-      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
-      API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
-    labels:
-      traefik.docker.network: web
-      traefik.enable: "True"
-      traefik.http.routers.saleor-store.entrypoints: websecure
-      traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
-      traefik.http.routers.saleor-store.service: saleor-store
-      traefik.http.services.saleor-store.loadbalancer.server.port: '80'
-    networks:
-      web: {}
-    ports:
-    - published: 3000
-      target: 3000
-    restart: unless-stopped
-    volumes:
-    - /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront:/app:cached
-    - /app/node_modules
+  # storefront:
+  #   build:
+  #     context: /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront
+  #     dockerfile: ./Dockerfile
+  #   depends_on:
+  #     api:
+  #       condition: service_started
+  #   environment:
+  #     ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
+  #     ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+  #     API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
+  #   labels:
+  #     traefik.docker.network: web
+  #     traefik.enable: "True"
+  #     traefik.http.routers.saleor-store.entrypoints: websecure
+  #     traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
+  #     traefik.http.routers.saleor-store.service: saleor-store
+  #     traefik.http.services.saleor-store.loadbalancer.server.port: '80'
+  #   networks:
+  #     web: {}
+  #   ports:
+  #   - published: 3000
+  #     target: 3000
+  #   restart: unless-stopped
+  #   volumes:
+  #   - /home/developer/sourcegoodfood/code/saleor-platform/saleor-storefront:/app:cached
+  #   - /app/node_modules
   worker:
     build:
       args:
