@@ -22,8 +22,8 @@ services:
       redis:
         condition: service_started
     environment:
-      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
-      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
+      ALLOWED_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
       API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
       CELERY_BROKER_URL: redis://redis:6379/1
       DASHBOARD_URL: https://saleor-admin-test.govinddiwakar.tech/
@@ -57,9 +57,9 @@ services:
       context: /home/developer/sourcegoodfood/code/saleor-platform/saleor-dashboard
       dockerfile: ./Dockerfile
     environment:
-      ALLOWED_CLIENT_HOSTS: '"localhost,test.govinddiwakar.tech"'
-      ALLOWED_HOSTS: '"test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api-test.govinddiwakar.tech,*.govinddiwakar.tech"'
-      API_URI: http://saleor-api-test.govinddiwakar.tech/graphql/
+      ALLOWED_CLIENT_HOSTS: "localhost,test.govinddiwakar.tech,172.20.0.1"
+      ALLOWED_HOSTS: "test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api-test.govinddiwakar.tech,*.govinddiwakar.tech,172.20.0.1"
+      API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
     labels:
       traefik.docker.network: web
       traefik.enable: "True"
@@ -161,7 +161,7 @@ services:
       api:
         condition: service_started
     environment:
-      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
       ALLOWED_HOSTS: .govinddiwakar.tech,localhost
       API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
     labels:
@@ -193,8 +193,8 @@ services:
       redis:
         condition: service_started
     environment:
-      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost
-      ALLOWED_HOSTS: .govinddiwakar.tech,localhost
+      ALLOWED_CLIENT_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
+      ALLOWED_HOSTS: .govinddiwakar.tech,localhost,172.20.0.1
       API_URI: https://saleor-api-test.govinddiwakar.tech/graphql/
       CELERY_BROKER_URL: redis://redis:6379/1
       DATABASE_URL: postgres://saleor:password@db/saleor
