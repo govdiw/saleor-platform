@@ -45,7 +45,7 @@ services:
       - ./saleor-storefront/:/app:cached
       - /app/node_modules/
     environment:
-     - API_URI=https://saleor-api.test.govinddiwakar.tech/graphql/
+     - API_URI=https://saleor-api-test.govinddiwakar.tech/graphql/
      - ALLOWED_CLIENT_HOSTS=.govinddiwakar.tech,localhost
      - ALLOWED_HOSTS=.govinddiwakar.tech,localhost
 
@@ -60,9 +60,9 @@ services:
       - ./saleor-dashboard/:/app:cached
       - /app/node_modules/
     environment:
-      - API_URI=http://saleor-api.test.govinddiwakar.tech/graphql/
+      - API_URI=http://saleor-api-test.govinddiwakar.tech/graphql/
       - ALLOWED_CLIENT_HOSTS="localhost,test.govinddiwakar.tech"
-      - ALLOWED_HOSTS="test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api.test.govinddiwakar.tech,*.govinddiwakar.tech"
+      - ALLOWED_HOSTS="test.govinddiwakar.tech,localhost,,localhost:8000,saleor-api-test.govinddiwakar.tech,*.govinddiwakar.tech"
 
   db:
     image: library/postgres:11.1-alpine
