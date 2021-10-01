@@ -64,7 +64,7 @@ services:
       traefik.docker.network: web
       traefik.enable: "True"
       traefik.http.routers.saleor-admin.entrypoints: websecure
-      traefik.http.routers.saleor-admin.rule: Host(`saleor-admin-test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-admin.rule: Host(`saleor-admin-test.govinddiwakar.tech`)  && PathPrefix(`/dashboard/`)
       traefik.http.routers.saleor-admin.service: saleor-admin
       traefik.http.services.saleor-admin.loadbalancer.server.port: '80'
     networks:

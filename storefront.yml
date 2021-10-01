@@ -23,6 +23,8 @@ services:
       traefik.enable: "True"
       traefik.http.routers.saleor-store.entrypoints: websecure
       traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
+      traefik.http.routers.saleor-store.rule: Host(`test.govinddiwakar.tech`)
+        && PathPrefix(`/service-worker.js/`)
       traefik.http.routers.saleor-store.service: saleor-store
       traefik.http.services.saleor-store.loadbalancer.server.port: '80'
     networks:
